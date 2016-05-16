@@ -1,0 +1,126 @@
+﻿@using System.Configuration
+@using DiVAImporterLibrary
+@model Publiceringsverktyg.Models.MatchResultViewModel
+@{
+    IEnumerable<Tuple<Dictionary<string, string>, Dictionary<string, string>, int>> MatchResult = ViewBag.MatchResult;
+    IEnumerable<Dictionary<string, string>> UnmatchedWos = ViewBag.UnmatchedWos;
+    IEnumerable<Dictionary<string, string>> UnmatchedDivas = ViewBag.UnmatchedDivas;
+    ViewBag.Title = "Matcha WoS-poster mot DiVA";
+    ViewBag.HeaderColor = "";
+    int batchSize = int.Parse(ConfigurationManager.AppSettings["DownloadBatchSize"]);
+}
+<div class="page-header">
+    <div class="progress">
+        <div class="progress-bar progress-bar-success" role="progressbar" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100" style="width: 100%">
+            <span class="sr-only">100% Complete (success)</span>
+        </div>
+    </div>
+    <h1>Matchningen är klar.</h1>
+    <p>Fann @UnmatchedWos.Count() poster som inte finns i DiVA.</p>
+    <div class="alert alert-info" role="alert">
+        <p><strong>Vad gör jag med resultatet? </strong><br/>De @UnmatchedWos.Count() posterna från din fil som inte finns i DiVA kan du ladda ned och sedan importera in i DiVA.</p>
+        <p>När det gäller matchningar på andra nivåer bör man manuellt se om posterna är desamma eller om de kan importeras. Poster med bristfällig metadata kan kompletteras. Poster på högre matchningsnivå (låg siffra) kan kompletteras med ISI-nummer från tabellen.</p>
+    </div>
+</div>
+
+@using (Html.BeginForm("DownLoadWoSRecords", "WoSImporting"))
+{
+    @Html.AntiForgeryToken()
+    @Html.ValidationSummary(true)
+    
+    <div class="panel-group" id="accordion" role="tablist" aria-multiselectable="true">
+        
+        
+        <div class="accordion-frame active">
+            <a class="heading collapsed" href="#"></a>
+            <div class="content"></div>
+        </div>
+
+        <div class="panel panel-default">
+            <div class="panel-heading" role="tab" id="headings">
+                <h4 class="panel-title">
+                    <a class="collapsed" role="button" data-toggle="collapse" data-parent="#accordion" href="#collapses" aria-expanded="false" aria-controls="collapses">
+                       Poster som inte finns i DiVA - @UnmatchedWos.Count()
+                    </a>
+                </h4>
+            </div>
+            <div id="collapses" class="panel-collapse collapse" role="tabpanel" aria-labelledby="headings">
+                <div class="panel-body">
+                    <p>Filerna nedan kan laddas in i DiVA via DiVAs importgränssnitt. Bägge formaten fungerar men har sina för- och nackdelar.</p>
+                  @DisplayDownLoadLink(-1, UnmatchedWos.Count())
+                </div>
+            </div>
+        </div>
+        @for (var i = 0; i < 6; i++)
+        {
+            @DisplayMatchLevel(i, MatchResult.Where(a => a.Item3 == i).ToArray())
+        }
+    </div>
+}
+@helper DisplayDownLoadLink(int leveln, int numberOfRecords)
+{
+    int batchSize = int.Parse(ConfigurationManager.AppSettings["DownloadBatchSize"]);
+    var numberOfBatches = (numberOfRecords / batchSize) + 1;
+    <h4>Filer att ladda ned</h4>
+    <table class="table">
+        <tbody class="striped">
+            @for (var i = 0; i < numberOfBatches; i++)
+            {
+                <tr>
+                    <td>@(i * batchSize + 1) -  @(i < numberOfBatches - 1 ? (i + 1) * batchSize : numberOfRecords)</td>
+                    <td><a href="@Url.Action("DownLoadWoSRecords", new { Batch = i, MatchLevel = leveln })">  ISI-CSV &nbsp;&nbsp;<span class="glyphicon glyphicon-floppy-save" aria-hidden="true"></span></a></td>
+                    <td><a href="@Url.Action("DownLoadWoSRecords", new { Batch = i, MatchLevel = leveln, Format = "MODS" })">MODS &nbsp;&nbsp;<span class="glyphicon glyphicon-floppy-save" aria-hidden="true"></span></a></td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@helper DisplayMatchLevel(int level, Tuple<Dictionary<string, string>, Dictionary<string, string>, int>[] levelsMatchResult)
+{
+    var matchCriterias = new AbstractMatchCriteria[] { new Level0(), new Level1(), new Level2(), new Level3(), new Level4(), new Level5() };
+    <div class="panel panel-default">
+        <div class="panel-heading" role="tab" id="@("heading"+level)">
+            <h4 class="panel-title">
+                <a class="collapsed" role="button" data-toggle="collapse" data-parent="#accordion" href="#@("collapse"+level)" aria-expanded="false" aria-controls="@("collapse"+level)">
+                    Nivå @level (@levelsMatchResult.Count().ToString() poster )
+                </a>
+            </h4>
+        </div>
+        <div id="@("collapse"+level)" class="panel-collapse collapse" role="tabpanel" aria-labelledby="@("heading"+level)">
+            <div class="panel-body">
+                @if (levelsMatchResult.Any())
+                {
+                    <h4>Matchningskriterium</h4>
+                    <p>@matchCriterias.First(a => a.Level == level).Description</p>
+                    <p>@DisplayDownLoadLink(level, levelsMatchResult.Length)</p>
+                    <h3>Matchade IDn</h3>
+                    @DisplayIds(levelsMatchResult)
+                }
+                else
+                {
+                    <h3>Ingen Matchning</h3>
+                }
+            </div>
+        </div>
+    </div>
+}
+@helper DisplayIds(IEnumerable<Tuple<Dictionary<string, string>, Dictionary<string, string>, int>> LevelsMatchResult)
+{
+
+    <table class="table">
+        <thead><tr><th>WoS_ID</th><th>DiVA_ID</th><th>Match_level</th></tr></thead>
+        <tbody class="striped">
+            @foreach (var a in LevelsMatchResult.OrderBy(a => a.Item3))
+            {
+                <tr>
+                    <td>@a.Item2["UT"]</td>
+                    <td>@a.Item1["PID"]</td>
+                    <td>@a.Item3</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+
+
+}

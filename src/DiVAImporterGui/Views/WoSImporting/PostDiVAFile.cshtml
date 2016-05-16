@@ -1,0 +1,29 @@
+﻿@using System.Web.Configuration
+@{
+    ViewBag.Title = "Matcha WoS-poster mot DiVA"; ViewBag.HeaderColor = "bg-white";
+    var divaSearchString = WebConfigurationManager.AppSettings["DefaultDivaSearchString"];
+}
+<div class="page-header">
+    <div class="progress">
+        <div class="progress-bar progress-bar-success" role="progressbar" aria-valuenow="33" aria-valuemin="0" aria-valuemax="100" style="width: 33%">
+            <span class="sr-only">33% Complete (success)</span>
+        </div>
+    </div>
+    <div class="alert alert-success" role="alert">Du laddade upp @ViewBag.WosRecords WoS-poster.</div>
+    <h1>Hämta data från DiVAs API</h1>
+    <p></p>
+    <p>Detta steg kräver att söksträngen till lärosätets DiVA-instans är korrekt angiven under <a href="@Url.Action("EditSettings", "WoSImporting")">inställningar <span class="glyphicon glyphicon-cog" aria-hidden="true"></span></a></p>
+</div>
+@using (Html.BeginForm("FetchFromDivaApi", "WoSImporting", FormMethod.Post, new { @class = "form-inline" }))
+{
+    <div class="form-group">
+        <label for="fromYear">År, från</label>
+        @Html.TextBox("YearFrom", (int)ViewBag.YearFrom, new { @class = "form-control" })
+    </div>
+    <div class="form-group">
+        <label for="toYear">År, till</label>
+        @Html.TextBox("YearTo", (int)ViewBag.YearTo, new { @class = "form-control" })
+    </div>
+    <button type="submit" class="btn btn-primary">Hämta &nbsp;&nbsp;</button>
+}
+

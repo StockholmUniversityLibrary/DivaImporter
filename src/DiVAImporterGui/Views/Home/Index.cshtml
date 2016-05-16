@@ -1,0 +1,35 @@
+﻿@{ViewBag.HeaderColor = "bg-blueDark"; }
+<div class="padding10">
+    <a href="@Url.Action("Index", "WoSImporting")">
+        <div class="tile double bg-indigo">
+            <div class="tile-content">
+                <h5>Matcha WoS-poster mot DiVA</h5>
+               <p><br /> </p>
+            </div>
+        </div>
+    </a>
+      <a href="@Url.Action("Index", "SfxToEds")">
+        <div class="tile double bg-red">
+            <div class="tile-content">
+                <h5>Gör om Google Schoolar-exporten till EDS-format</h5>
+               <p></p>
+            </div>
+        </div>
+    </a>
+      <a href="@Url.Action("Index", "VerdeExport")">
+        <div class="tile double">
+            <div class="tile-content bg-darkGreen">
+                <h5>Se data från Verde</h5>
+               <p><br />Gör uppslag mot Verdes API med olika typer av ID:n och se den information som finns lagrad där. </p>
+            </div>
+        </div>
+    </a>
+      <a href="@Url.Action("Index", "Digitalisering")">
+        <div class="tile double">
+            <div class="tile-content bg-darkOrange">
+                <h5>Digitaliseringar</h5>
+               <p><br />Arbeta med databasen över digitaliseringar</p>
+            </div>
+        </div>
+    </a>
+</div>

@@ -1,0 +1,52 @@
+﻿@model Publiceringsverktyg.Models.WosImportingSettings
+@{
+    ViewBag.Title = "Matcha WoS-poster mot DiVA";
+    ViewBag.HeaderColor = "bg-white";
+    IEnumerable<string> fileNames = ViewBag.Files;
+}
+
+@using (Html.BeginForm())
+{
+    @Html.AntiForgeryToken()
+    @Html.ValidationSummary(true)
+    <h2>Ändra inställningar</h2>
+    <div class="alert alert-info" role="alert">OBS! Dessa inställningar kan skrivas över av andra som använder systemet. Spara undan dem någonsans eller be tjänstens leverantör om en egen instans.</div>
+    <div class="form-group">
+        @Html.LabelFor(model => model.DownloadBatchSize) 
+        <span class="glyphicon glyphicon-question-sign" aria-hidden="true" data-container="body" data-toggle="popover" data-placement="right" data-content="Hur många poster skall import-filerna innehålla som laddas ned från tjänsten? 40 är ett lagom antal att börja med."></span>        
+        @Html.TextBoxFor(model => model.DownloadBatchSize, new { @class = "form-control" })
+        @Html.ValidationMessageFor(model => model.DownloadBatchSize)
+
+    </div>
+    <div class="form-group">
+        @Html.LabelFor(model => model.MaxAuthorCount)
+        <span class="glyphicon glyphicon-question-sign" aria-hidden="true" data-container="body" data-toggle="popover" data-placement="right" data-content="Hur många författare utöver det egna lärosätets skall följa med i filerna som laddas ned från tjänsten? Tänk på att det finns poster med >1000 författare."></span>        
+        @Html.TextBoxFor(model => model.MaxAuthorCount, new { @class = "form-control" })
+        @Html.ValidationMessageFor(model => model.MaxAuthorCount)
+    </div>
+    <div class="form-group">
+        @Html.EditorFor(model => model.OnlyFirstLastAndLocalAuthors, null, new { @class = "form-control" })
+        @Html.LabelFor(model => model.OnlyFirstLastAndLocalAuthors)
+        <span class="glyphicon glyphicon-question-sign" aria-hidden="true" data-container="body" data-toggle="popover" data-placement="right" data-content="Om vald sparas bara första, sista och det egna lärosätets författare från posten."></span>        
+    </div>
+    <div class="form-group">
+        @Html.LabelFor(model => model.OwnAuthorAffiliationRegExp)
+        <span class="glyphicon glyphicon-question-sign" aria-hidden="true" data-container="body" data-toggle="popover" data-placement="right" data-content="Reguljärt som uttryck som används för att matcha det egna lärosätets författare i adressfälten. Bör innehålla olika stavningar av lärosätet plus eventuella institut knutna till lärosätet."></span>
+        @Html.TextAreaFor(model => model.OwnAuthorAffiliationRegExp, new { @class = "form-control" })
+        @Html.ValidationMessageFor(model => model.OwnAuthorAffiliationRegExp)
+        <span id="helpBlock" class="help-block">Exempel:<em>(stockhol(m|ms)\s*uni(v|versitet|versity))|(uni(v|versitet|versity)(\s*of\s*|\s*)stockholm)|(os(k|c)ar\s+klein\s+c??.*)</em></span>
+
+    </div>
+    <div class="form-group">
+        @Html.LabelFor(model => model.DivaApiUrl)
+        <span class="glyphicon glyphicon-question-sign" aria-hidden="true" data-container="body" data-toggle="popover" data-placement="right" data-content="Länk till utsökning i DiVA. Se exempel nedan."></span>        
+        @Html.TextBoxFor(model => model.DivaApiUrl, new { @class = "form-control" })
+        @Html.ValidationMessageFor(model => model.DivaApiUrl)
+        <span id="helpBlock" class="help-block">Exempel:<em>http://su.diva-portal.org/dice/csvAll2?query= organisationId:504 AND  contentTypeCode:(refereed OR science) AND  publicationTypeCode:(article OR review OR chapter OR conferencePaper) AND  year:[{0} TO {1}]&start=0&rows=200000&sort=author_sort asc</em></span>
+    </div>
+    <p>
+        <input class="btn btn-primary" type="submit" value="Spara" />
+    </p>
+
+
+}
